@@ -35,17 +35,32 @@ app.post('/students', (req, res) => {
       return res.status(500).json({ error: err.message });
     }
 
-    res.json({ id: result.insertId, name, email });
+    
+    res.json({ id: result.insertId, full_name: name, email });
   });
 });
 app.get('/students', (req, res) => {
-  connection.query('SELECT full_name , email  FROM students', (err, results) => {
+  connection.query('SELECT id, full_name , email  FROM students', (err, results) => {
     if (err) {
       return res.status(500).json({ error: err.message })
     }
+    console.log(results)
     res.json(results)
   })
 })
+app.delete('/students/:id', (req, res) => {
+  const { id } = req.params;
+  connection.query('DELETE FROM students WHERE id = ?', [id], (err, result) => {
+    if (err) {
+      console.log("MYSQL ERROR (DELETE):", err);
+      return res.status(500).json({ error: err.message });
+    }
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ message: 'Student not found' });
+    }
+    res.json({ message: 'Student deleted', id: Number(id) });
+  });
+});
 
 
 app.listen(port, () => {
